@@ -43,6 +43,7 @@ class ArticleControllerTest {
         this.mvc = mvc;
     }
 
+
     @DisplayName("[view][GET] 게시글 리스트 (게시판) 페이지 - 정상 호출")
     @Test
     public void givenNothing_whenRequestingArticlesView_thenReturnsArticlesView() throws Exception {
@@ -66,7 +67,7 @@ class ArticleControllerTest {
     void givenPagingAndSortingParams_whenSearchingArticlesPage_thenReturnsArticlesPage() throws Exception {
         // Given
         String sortName = "title";
-        String direction ="desc";
+        String direction = "desc";
         int pageNumber = 0;
         int pageSize = 5;
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Order.desc(sortName)));
@@ -76,27 +77,28 @@ class ArticleControllerTest {
 
         // When & Then
         mvc.perform(
-                get("/articles")
-                        .queryParam("page", String.valueOf(pageNumber))
-                        .queryParam("size", String.valueOf(pageSize))
-                        .queryParam("sort", sortName + "," + direction)
-        )
+                        get("/articles")
+                                .queryParam("page", String.valueOf(pageNumber))
+                                .queryParam("size", String.valueOf(pageSize))
+                                .queryParam("sort", sortName + "," + direction)
+                )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(view().name("articles/index"))
                 .andExpect(model().attributeExists("articles"))
                 .andExpect(model().attribute("paginationBarNumbers", barNumbers));
-                then(articleService).should().searchArticles(null, null, pageable);
-                then(paginationService).should().getPaginationBarNumbers(pageable.getPageNumber(), Page.empty().getTotalPages());
-
+        then(articleService).should().searchArticles(null, null, pageable);
+        then(paginationService).should().getPaginationBarNumbers(pageable.getPageNumber(), Page.empty().getTotalPages());
     }
 
-    @DisplayName("[view][GET] 게시글 상세 페이지 - 정상 호출")
+    @DisplayName("[view][GET] 게시글 페이지 - 정상 호출")
     @Test
     public void givenNothing_whenRequestingArticleView_thenReturnsArticleView() throws Exception {
         // Given
         Long articleId = 1L;
+        long totalCount = 1L;
         given(articleService.getArticle(articleId)).willReturn(createArticleWithCommentsDto());
+        given(articleService.getArticleCount()).willReturn(totalCount);
 
         // When & Then
         mvc.perform(get("/articles/" + articleId))
@@ -104,8 +106,11 @@ class ArticleControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(view().name("articles/detail"))
                 .andExpect(model().attributeExists("article"))
-                .andExpect(model().attributeExists("articleComments"));
+                .andExpect(model().attributeExists("articleComments"))
+                .andExpect(model().attributeExists("articleComments"))
+                .andExpect(model().attribute("totalCount", totalCount));
         then(articleService).should().getArticle(articleId);
+        then(articleService).should().getArticleCount();
     }
 
     @Disabled("구현 중")
@@ -118,7 +123,7 @@ class ArticleControllerTest {
         mvc.perform(get("/articles/search"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-                .andExpect(view().name("articles/search"));
+                .andExpect(model().attributeExists("articles/search"));
     }
 
     @Disabled("구현 중")
@@ -131,8 +136,9 @@ class ArticleControllerTest {
         mvc.perform(get("/articles/search-hashtag"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-                .andExpect(view().name("articles/hash-tag"));
+                .andExpect(model().attributeExists("articles/search-hashtag"));
     }
+
 
     private ArticleWithCommentsDto createArticleWithCommentsDto() {
         return ArticleWithCommentsDto.of(
@@ -143,23 +149,23 @@ class ArticleControllerTest {
                 "content",
                 "#java",
                 LocalDateTime.now(),
-                "jonny",
+                "uno",
                 LocalDateTime.now(),
-                "jonny"
+                "uno"
         );
     }
 
     private UserAccountDto createUserAccountDto() {
         return UserAccountDto.of(1L,
-                "jonny",
+                "uno",
                 "pw",
-                "jonny@mail.com",
-                "jonny",
+                "uno@mail.com",
+                "Uno",
                 "memo",
                 LocalDateTime.now(),
-                "jonny",
+                "uno",
                 LocalDateTime.now(),
-                "jonny"
+                "uno"
         );
     }
 
