@@ -3,8 +3,6 @@ package com.fastcampus.projectboard.dto.response;
 import com.fastcampus.projectboard.dto.ArticleDto;
 
 import java.time.LocalDateTime;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public record ArticleResponse(
         Long id,
